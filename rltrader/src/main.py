@@ -7,7 +7,7 @@ import schedule
 import time
 import keyring
 import requests
-import pykis
+# import pykis
 import pandas as pd
 
 from quantylab.rltrader import settings
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     value_network_name = f'{args.name}_{args.rl_method}_{args.net}_value.mdl'
     policy_network_name = f'{args.name}_{args.rl_method}_{args.net}_policy.mdl'
     start_epsilon = 1 if args.mode in ['train', 'update'] else 0
-    num_epoches = 1000 if args.mode in ['train', 'update'] else 1
+    num_epoches = 500 if args.mode in ['train', 'update'] else 1
     num_steps = 5 if args.net in ['lstm', 'cnn'] else 1
 
     # Backend 설정
@@ -113,11 +113,11 @@ if __name__ == '__main__':
         "account_code": ACCOUNT.split('-')[0],   
         "product_code": ACCOUNT.split('-')[1]
     }
-    if investment_type =='mock_invest':
-        domain = pykis.DomainInfo(kind="virtual")
-        api = pykis.Api(key_info=key_info,domain_info=domain,account_info=account_info)
-    else:
-        api = pykis.Api(key_info=key_info,account_info=account_info)
+    # if investment_type =='mock_invest':
+    #     domain = pykis.DomainInfo(kind="virtual")
+    #     api = pykis.Api(key_info=key_info,domain_info=domain,account_info=account_info)
+    # else:
+    #     api = pykis.Api(key_info=key_info,account_info=account_info)
     ### 📢한국투자증권 API 활용을 위한 코드 [끝]
 
     for stock_code in args.stock_code:
@@ -338,7 +338,7 @@ if __name__ == '__main__':
                     # 먼저 매도가 가능한지 확인 후 sell_kr_stock을 실행 
                     # 여기서는 timer 사용해서 10초안에 매도 안 되면 5원씩 price를 낮추면서 매도를 다시 시도
                     # 만약 총 40초 안에 매도가 안 되면 그냥 action을 HOLD로 변경
-                    api.sell_kr_stock(stock_code, trading_unit, price=curr_price)
+                    # api.sell_kr_stock(stock_code, trading_unit, price=curr_price)
 
                     # 매도 성공 시, 수수료를 적용하여 총 매수 금액 산정 및 변수 업데이트
                     hantu_charge = get_charge(learner.environment.get_price(), trading_unit)

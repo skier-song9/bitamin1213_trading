@@ -283,6 +283,11 @@ def load_data(code, date_from, date_to, ver='v1'):
     else:
         raise Exception('Invalid version.')
     
+    training_data = training_data.fillna(0)
+
+    # print(chart_data.head())
+    # print(training_data.head())
+
     return chart_data, training_data
 
 

@@ -159,9 +159,10 @@ class ReinforcementLearner:
 
     def build_sample(self):
         self.environment.observe()
+        # print(f"📢 {self.environment.observation}, {self.training_data_idx}")
         if len(self.training_data) > self.training_data_idx + 1:
             self.training_data_idx += 1
-            self.sample = self.training_data[self.training_data_idx].tolist()
+            self.sample = self.training_data.iloc[self.training_data_idx].tolist()
             self.sample.extend(self.agent.get_states())
             return self.sample
         return None
