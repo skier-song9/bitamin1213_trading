@@ -344,30 +344,61 @@ class ReinforcementLearner:
         # self.agent.reset()
 
         # step 샘플을 만들기 위한 큐
+        # q_sample = collections.deque(maxlen=self.num_steps)
+        
+        # result = []
+        # while True:
+        #     # 샘플 생성
+        #     next_sample = self.build_sample() # observation이 최신으로 갱신됨.
+        #     if next_sample is None:
+        #         break
+
+        #     # num_steps만큼 샘플 저장
+        #     q_sample.append(next_sample)
+        #     if len(q_sample) < self.num_steps:
+        #         continue
+
+        #     # 가치, 정책 신경망 예측
+        #     pred_value = None
+        #     pred_policy = None
+        #     if self.value_network is not None:
+        #         pred_value = self.value_network.predict(list(q_sample)).tolist()
+        #     if self.policy_network is not None:
+        #         pred_policy = self.policy_network.predict(list(q_sample)).tolist()
+            
+        #     # 신경망에 의한 행동 결정
+        #     result.append((self.environment.observation[0], pred_value, pred_policy))
+
+        # if self.gen_output:
+        #     with open(os.path.join(self.output_path, f'pred_{self.stock_code}.json'), 'w') as f:
+        #         print(json.dumps(result), file=f)
+
+        # return result
+
+        # step 샘플을 만들기 위한 큐
         q_sample = collections.deque(maxlen=self.num_steps)
         
         result = []
-        while True:
-            # 샘플 생성
-            next_sample = self.build_sample() # observation이 최신으로 갱신됨.
-            if next_sample is None:
-                break
 
-            # num_steps만큼 샘플 저장
+        ### 마지막 5개의 row를 추출해 q_sample에 저장
+        for i in range(-(self.num_steps),0):
+            self.environment.observation = self.environment.chart_data.iloc[i]
+            next_sample = self.training_data.iloc[i].tolist()
+            gp = self.environment.observation.iloc[self.environment.PRICE_IDX]
+            self.agent.ratio_hold = self.agent.num_stocks * int(gp) \
+                / self.agent.portfolio_value
+            next_sample.extend([self.agent.ratio_hold,self.agent.profitloss,(gp / self.agent.avg_buy_price) - 1 \
+                if self.agent.avg_buy_price > 0 else 0])
             q_sample.append(next_sample)
-            if len(q_sample) < self.num_steps:
-                continue
 
-            # 가치, 정책 신경망 예측
-            pred_value = None
-            pred_policy = None
-            if self.value_network is not None:
-                pred_value = self.value_network.predict(list(q_sample)).tolist()
-            if self.policy_network is not None:
-                pred_policy = self.policy_network.predict(list(q_sample)).tolist()
-            
-            # 신경망에 의한 행동 결정
-            result.append((self.environment.observation[0], pred_value, pred_policy))
+        pred_value = None
+        pred_policy = None
+        if self.value_network is not None:
+            pred_value = self.value_network.predict(list(q_sample)).tolist()
+        if self.policy_network is not None:
+            pred_policy = self.policy_network.predict(list(q_sample)).tolist()
+        # 신경망에 의한 행동 결정
+        result.append((self.environment.observation[0], pred_value, pred_policy))
 
         if self.gen_output:
             with open(os.path.join(self.output_path, f'pred_{self.stock_code}.json'), 'w') as f:

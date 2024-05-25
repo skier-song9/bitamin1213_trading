@@ -203,7 +203,7 @@ if __name__ == '__main__':
 ### *⚠️코드 수정 시작⚠️*  ###
     elif args.mode == 'predict':
         ### load properties.json
-        props = read_json('./properties.json')
+        props = read_json('./quantylab/properties.json')
 
         ### Load Informations
         '''
@@ -255,19 +255,23 @@ if __name__ == '__main__':
         results = [] # 하룻동안의 결과들을 저장할 변수
 
         ### 1분마다 predict를 호출
-        counter = 0 # 하루에 390번 predict를 실행 (오전9시~오후3시30 : 390분)
+        counter = 0 
         pt = time.time()
         try:
             while True:
                 while True:
                     ct = time.time()
+                    ctl = time.localtime()
+                    if counter == 0:
+                        break
                     if (ct-pt) >= 60:
                         pt = ct
                         break
                     continue
+                counter += 1
                 if int(get_dtime_str()) >= 153030:
                     break 
-                print(f"{counter} | {ct.tm_hour}:{ct.tm_min}:{ct.tm_sec} | predict started")
+                print(f"{counter} | {ctl.tm_hour}:{ctl.tm_min}:{ctl.tm_sec} | predict started")
                 result = learner.predict()
 
                 ### predict의 result로 매수/매도/관망 행동 판단 후 수행
