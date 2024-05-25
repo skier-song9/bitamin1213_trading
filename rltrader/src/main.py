@@ -226,7 +226,7 @@ if __name__ == '__main__':
             props['initial_balance'] = INITIAL_BALANCE
             props['balance'] = INITIAL_BALANCE
             props['num_stocks'] = 0
-            props['portfolio_value'] = 0
+            props['portfolio_value'] = INITIAL_BALANCE
             props['num_buy'] = 0
             props['num_sell'] = 0
             props['num_hold'] = 0
@@ -247,7 +247,7 @@ if __name__ == '__main__':
         while True:
             # 현재 시간을 가져와서 한국 시간으로 변환
             current_time = time.localtime()
-            if current_time.tm_hour == 8 and current_time.tm_min == 59 and current_time.tm_sec >= 0:
+            if current_time.tm_hour >= 8 and current_time.tm_min == 59 and current_time.tm_sec >= 0:
                 break
             time.sleep(0.5)
 
@@ -420,7 +420,7 @@ if __name__ == '__main__':
                 )
                 chart_data = pd.concat([chart_data,new_row]).reset_index(drop=True)
                 # chart_data.to_csv(f"../data/v1/{stock_code}.csv", index=0)
-                new_pre_data = data_manager_3.preprocess(chart_data.iloc[-120:,:6]).reset_index(drop=True)
+                new_pre_data = data_manager_3.preprocess(chart_data.iloc[-120:,:6].reset_index(drop=True))
                 new_tr = new_pre_data[data_manager_3.COLUMNS_TRAINING_DATA_V1].iloc[-1]
                 new_tr = pd.DataFrame([new_tr])
                 training_data = pd.concat([training_data, new_tr]).reset_index(drop=True)
@@ -472,6 +472,11 @@ if __name__ == '__main__':
             
         finally:
             # chart_data 저장
+            cd = pd.read_csv(f'../data/v1/{stock_code}.csv')
+            last_idx = int(chart_data[chart_data['date']==args.end_date].index[-1])+1
+            # print('last_idx', last_idx)
+            cd = pd.concat([cd, chart_data.iloc[last_idx:,:]]).reset_index(drop=True)
+            cd.to_csv(f'../data/v1/{stock_code}.csv',index=0)
 
             ### json에 저장
             datas = {
@@ -488,7 +493,8 @@ if __name__ == '__main__':
                 }
             write_json(data=datas,filename='./quantylab/properties.json')
             # schedule.clear()
-            pass
+            # pass
+            print("✅finish",get_time_str())
         
         
 ### *⚠️코드 수정 끝⚠️*  ###
