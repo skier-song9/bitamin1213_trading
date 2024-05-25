@@ -1,6 +1,6 @@
 # 🍊BitaMin Project
 
-- BitaMin, data analysis &amp; data science assosiation, 12th and 13th joint project (2024.03.06 ~ 2024.).
+- BitaMin, data analysis &amp; data science assosiation, 12th and 13th joint project (2024.03.06 ~ 2024.06.05.)
 - Time Series and Reinforcement Learning for Stock Trading
 
 ## ✅Table of Contents
