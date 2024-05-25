@@ -14,6 +14,8 @@ from quantylab.rltrader import settings
 from quantylab.rltrader import utils
 from quantylab.rltrader.utils import *
 from quantylab.rltrader import data_manager_3
+from quantylab.rltrader.environment import Environment
+from quantylab.rltrader.agent import Agent
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -261,6 +263,8 @@ if __name__ == '__main__':
                         pt = ct
                         break
                     continue
+                if int(get_dtime_str()) >= 153030:
+                    break 
                 print(f"{counter} | {ct.tm_hour}:{ct.tm_min}:{ct.tm_sec} | predict started")
                 result = learner.predict()
 
@@ -380,11 +384,21 @@ if __name__ == '__main__':
                 )
                 chart_data = pd.concat([chart_data,new_row]).reset_index(drop=True)
                 chart_data.to_csv(f"../data/v1/{stock_code}.csv", index=0)
-
+                new_pre_data = data_manager_3.preprocess(chart_data.iloc[-120:,:6]).reset_index(drop=True)
+                new_tr = new_pre_data[data_manager_3.COLUMNS_TRAINING_DATA_V1].iloc[-1]
+                new_tr = pd.DataFrame([new_tr])
+                training_data = pd.concat([training_data, new_tr]).reset_index(drop=True)
+                # update learner's data
+                learner.chart_data = chart_data
+                learner.training_data = training_data
+                learner.environment.chart_data = chart_data
+                learner.agent.environment = learner.environment 
 
                 ### is_start_end 값이 2일 때 (금요일)
                 # counter 390번일 때 -> 마지막 실행 시 주식을 여전히 보유하고 있으면 모두 매도하는 코드
-
+                if (args.is_start_end ==2) and (int(get_dtime_str()) >= 152800):
+                    # 모두 매도
+                    pass
 
             # end while
             

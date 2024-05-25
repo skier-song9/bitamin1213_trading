@@ -7,6 +7,11 @@ import requests
 # 날짜, 시간 관련 문자열 형식
 FORMAT_DATE = "%Y%m%d"
 FORMAT_DATETIME = "%Y%m%d%H%M%S"
+FORMAT_HMS = "%H%M%S"
+
+def get_dtime_str(): # 현재 시간을 FORMAT_DATETIME으로 반환
+    return datetime.datetime.fromtimestamp(
+        int(time.time())).strftime(FORMAT_HMS)
 
 def get_today_str(): # 현재시간을 FORMAT_DATE으로 반환
     today = datetime.datetime.combine(

@@ -4,7 +4,7 @@ from quantylab.rltrader import utils
 
 class Agent:
     ###📢 요일을 나타내는 flag 설정
-    DAYS = [0,1,2,3,4] # 월~금
+    # DAYS = [0,1,2,3,4] # 월~금
 
     # 에이전트 상태가 구성하는 값 개수
     # 주식 보유 비율, 손익률, 주당 매수 단가 대비 주가 등락률
