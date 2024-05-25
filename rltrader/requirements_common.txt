@@ -1,0 +1,6 @@
+numpy
+pandas
+matplotlib
+mplfinance
+tqdm
+scikit-learn
