@@ -154,7 +154,7 @@ class Agent:
         # 매수/매도를 결정했을 때 그 행동을 실제로 수행할 수 있는지 확인
         if action == Agent.ACTION_BUY:
             # 적어도 1주를 살 수 있는지 확인
-            if self.balance < (self.environment.get_price()+add_price) * (1 + charge):
+            if self.balance < (self.environment.get_price()) * (1 + charge) + add_price:
                 return False
         elif action == Agent.ACTION_SELL:
             # 주식 잔고가 있는지 확인

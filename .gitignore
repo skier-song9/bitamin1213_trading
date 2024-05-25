@@ -3,3 +3,10 @@
 rltrader/src/quantylab/api.json
 
 **/api.json
+*/api.json
+/api.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.cache

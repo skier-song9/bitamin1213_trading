@@ -7,6 +7,7 @@ import schedule
 import time
 import keyring
 import requests
+import pprint
 # import pykis
 import pandas as pd
 
@@ -106,6 +107,7 @@ if __name__ == '__main__':
     keyring.set_password('app_secret','user',api_keys['app_secret'])
     APP_KEY, APP_SECRET, ACCOUNT = api_keys['app_key'], api_keys['app_secret'], api_keys['account']
     res = get_access_token(APP_KEY, APP_SECRET, investment_type)
+    pprint.pprint(res.json(), indent=4)
     ACCESS_TOKEN = res.json()['access_token']
     key_info = {
         "appkey": APP_KEY,                  
@@ -328,7 +330,7 @@ if __name__ == '__main__':
                             learner.agent.avg_buy_price = \
                                 (learner.agent.avg_buy_price * learner.agent.num_stocks + order_price * trading_unit) \
                                     / (learner.agent.num_stocks + trading_unit)  # 주당 매수 단가 갱신
-                            learner.agent.balance -= invest_amount  # 보유 현금을 갱신
+                            learner.agent.balance = balance  # 보유 현금을 갱신
                             learner.agent.num_stocks += trading_unit  # 보유 주식 수를 갱신
                             learner.agent.num_buy += 1  # 매수 횟수 증가
                         break
@@ -374,7 +376,7 @@ if __name__ == '__main__':
                                 (learner.agent.avg_buy_price * learner.agent.num_stocks - order_price * trading_unit) \
                                     / (learner.agent.num_stocks - trading_unit) \
                                         if learner.agent.num_stocks > trading_unit else 0  # 주당 매도 단가 갱신
-                            learner.agent.balance += income  # 보유 현금을 갱신
+                            learner.agent.balance = balance  # 보유 현금을 갱신
                             learner.agent.num_stocks -= trading_unit  # 보유 주식 수를 갱신
                             learner.agent.num_sell += 1  # 매도 횟수 증가
                         break
@@ -430,6 +432,37 @@ if __name__ == '__main__':
                 # counter 390번일 때 -> 마지막 실행 시 주식을 여전히 보유하고 있으면 모두 매도하는 코드
                 if (args.is_start_end ==2) and (int(get_dtime_str()) >= 152800):
                     # 모두 매도
+                    buy_counter = 0
+                    while 1:
+                        trading_unit = learner.agent.num_stocks                        
+                        order_id, order_time = sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
+                        print(f"{order_time}, {order_id} 매도 주문")
+                    #     print(get_time_str())
+                        time.sleep(5)
+                    #     print(get_time_str())
+                        order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
+                        if not is_buyed:
+                            ### 주문 취소
+                            rt_cd, order_time = cancel_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,order_id)
+                            print(f"{order_time}, {order_id} 매도 주문이 5초내에 체결되지 않아 취소되었습니다.")
+                            buy_counter+=1
+                            if buy_counter == 3:
+                                print(get_time_str(),'잔량 매도 실패')
+                                break
+                            continue
+
+                        ### 매도 주문이 체결된 경우
+                        # 잔액 업데이트
+                        balance = get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)
+                        # 매도 성공 시, 수수료를 적용하여 총 매도 금액 산정 및 변수 업데이트
+                        order_price, trading_unit = int(order_price), int(trading_unit)
+                        income = order_price * (1+ learner.agent.HANTU_TAX) * trading_unit
+                        if invest_amount > 0:
+                            learner.agent.avg_buy_price =  0  # 주당 매도 단가 갱신
+                            learner.agent.balance = balance  # 보유 현금을 갱신
+                            learner.agent.num_stocks -= trading_unit  # 보유 주식 수를 갱신
+                            learner.agent.num_sell += 1  # 매도 횟수 증가
+                        break
                     pass
 
             # end while

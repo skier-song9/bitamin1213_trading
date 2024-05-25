@@ -315,8 +315,8 @@ def sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_cod
     res = requests.post(url, data=json.dumps(data), headers=headers)
     if res.status_code == 200:
         resp = res.json()
-        return resp
-#         return resp['output']['ODNO'], resp['output']['ORD_TMD']
+        # return resp
+        return resp['output']['ODNO'], resp['output']['ORD_TMD']
     else :
         print("(buy_stock1) ERROR when call API:",res.status_code,res.text)
         exit(1)
