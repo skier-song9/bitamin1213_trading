@@ -338,8 +338,6 @@ if __name__ == '__main__':
                                             
 
                 elif action == learner.agent.ACTION_SELL:
-                    trading_unit = learner.agent.decide_trading_unit(confidence)
-                    trading_unit = min(trading_unit, learner.agent.num_stocks)
 
                     ### 매도 Loop
                     buy_counter = 0
