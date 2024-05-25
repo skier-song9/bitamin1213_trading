@@ -290,3 +290,74 @@ def get_min_data(APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code):
     else :
         print("(get_min_data) ERROR when call API:",res.status_code,res.text)
         exit(1)
+
+### 매도 주문
+def sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit):
+    ### 주식 매수
+    domain = 'https://openapivts.koreainvestment.com:29443' if investment_type=='mock_invest' else 'https://openapi.koreainvestment.com:9443'
+    endpoint = '/uapi/domestic-stock/v1/trading/order-cash'
+    url = domain + endpoint
+    data = {
+        "CANO" : f"{ACCOUNT.split('-')[0]}",
+        "ACNT_PRDT_CD" : f"{ACCOUNT.split('-')[1]}",
+        "PDNO" : f"{stock_code}",
+        "ORD_DVSN" : "01", # 시장가로 매도
+        "ORD_QTY" : f"{trading_unit}",
+        "ORD_UNPR" : "0"
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "authorization": f"Bearer {ACCESS_TOKEN}",
+        "appKey": f"{APP_KEY}",
+        "appSecret": f"{APP_SECRET}",
+        "tr_id": "VTTC0801U" if investment_type=='mock_invest' else "TTTC0801U"
+    }
+    res = requests.post(url, data=json.dumps(data), headers=headers)
+    if res.status_code == 200:
+        resp = res.json()
+        return resp
+#         return resp['output']['ODNO'], resp['output']['ORD_TMD']
+    else :
+        print("(buy_stock1) ERROR when call API:",res.status_code,res.text)
+        exit(1)
+
+def attempt_to_sell(api,learner,stock_code, trading_unit, curr_price):
+    start_time = time.time()
+    timeout = 40  # 총 대기 시간 설정 (40초)
+    decrease_interval = 10  # 매도 시도 간격 (10초)
+    price_decrease = 5  # 가격 감소량 (5원)
+
+    while True:
+        elapsed_time = time.time() - start_time
+        if elapsed_time > timeout:
+        # 시간 초과로 매도 중지하고 HOLD 상태로 변경
+            print(f"Timeout reached. Holding position. Total elapsed time: {elapsed_time:.2f}s")
+            learner.agent.num_hold += 1  # 매도 대신 보류 횟수 증가
+            learner.agent.action = learner.agent.ACTION_HOLD # 액션을 HOLD로 변경
+            break
+
+        # 매도 API 호출
+        response = api.sell_kr_stock(stock_code, trading_unit, price=curr_price)
+        if 'ODNO' in response and response['ODNO']: # 주문 번호가 반환된다는건 매도가 성공적으로 처리됐음을 의미
+            # 매도 성공 시 로직 처리 (ODNO 값이 존재하고 값이 비어있지 않을 경우)
+            print("Sell successful")
+            hantu_charge = get_charge(learner.environment.get_price(), trading_unit)
+            invest_amount = curr_price * (
+                1 - (learner.agent.HANTU_TAX + hantu_charge)) * trading_unit
+            
+            if invest_amount > 0:
+                #주당 매수 단가 갱신
+                learner.agent.avg_buy_price = \
+                    (learner.agent.avg_buy_price * learner.agent.num_stocks - curr_price * trading_unit) \
+                        / (learner.agent.num_stocks - trading_unit) \
+                            if learner.agent.num_stocks > trading_unit else 0
+
+                learner.agent.num_stocks -= trading_unit
+                learner.agent.balance += invest_amount
+                learner.agent.num_sell += 1
+                break
+        elif elapsed_time // decrease_interval > 0:
+        # 가격 감소 후 다시 시도
+            curr_price -= price_decrease # attempt_to_sell 함수 내부에서 curr_price를 5원 낮춘 값으로 저장함으로써 후에 감소된 가격으로 매도하게 됨.
+            print(f"Decreasing price by {price_decrease} to {curr_price} and retrying...")
+            time.sleep(decrease_interval - (elapsed_time % decrease_interval))

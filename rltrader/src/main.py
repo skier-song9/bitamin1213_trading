@@ -26,8 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('--rl_method', choices=['dqn', 'pg', 'ac', 'a2c', 'a3c', 'ppo', 'monkey'], default='a2c')
     parser.add_argument('--net', choices=['dnn', 'lstm', 'cnn', 'monkey'], default='dnn')
     parser.add_argument('--backend', choices=['pytorch', 'tensorflow', 'plaidml'], default='pytorch')
-    parser.add_argument('--start_date', default='20200101')
-    parser.add_argument('--end_date', default='20201231')
+    parser.add_argument('--start_date', default='202030560901')
+    parser.add_argument('--end_date', default='202405241530')
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--discount_factor', type=float, default=0.99)
     parser.add_argument('--balance', type=int, default=100000000)
@@ -312,6 +312,7 @@ if __name__ == '__main__':
                             buy_counter+=1
                             if buy_counter == 3:
                                 # 더 이상 주문 시도 멈추고 action을 HOLD로 바꿈.
+                                learner.agent.action = learner.agent.ACTION_HOLD
                                 learner.agent.num_hold += 1
                                 break
                             continue
@@ -338,25 +339,54 @@ if __name__ == '__main__':
                     trading_unit = learner.agent.decide_trading_unit(confidence)
                     trading_unit = min(trading_unit, learner.agent.num_stocks)
 
-                    ### 📢매도 API 호출
-                    # 먼저 매도가 가능한지 확인 후 sell_kr_stock을 실행 
-                    # 여기서는 timer 사용해서 10초안에 매도 안 되면 5원씩 price를 낮추면서 매도를 다시 시도
-                    # 만약 총 40초 안에 매도가 안 되면 그냥 action을 HOLD로 변경
-                    # api.sell_kr_stock(stock_code, trading_unit, price=curr_price)
+                    ### 매도 Loop
+                    buy_counter = 0
+                    while 1:
+                        trading_unit = learner.agent.decide_trading_unit(confidence)
+                        trading_unit = min(trading_unit, learner.agent.num_stocks)
+                        
+                        order_id, order_time = sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
+                        print(f"{order_time}, {order_id} 매도 주문")
+                    #     print(get_time_str())
+                        time.sleep(5)
+                    #     print(get_time_str())
+                        order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
+                        if not is_buyed:
+                            ### 주문 취소
+                            rt_cd, order_time = cancel_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,order_id)
+                            print(f"{order_time}, {order_id} 매도 주문이 5초내에 체결되지 않아 취소되었습니다.")
+                            buy_counter+=1
+                            if buy_counter == 3:
+                                # 더 이상 주문 시도 멈추고 action을 HOLD로 바꿈.
+                                learner.agent.action = learner.agent.ACTION_HOLD
+                                learner.agent.num_hold += 1
+                                break
+                            continue
 
-                    # 매도 성공 시, 수수료를 적용하여 총 매수 금액 산정 및 변수 업데이트
-                    hantu_charge = get_charge(learner.environment.get_price(), trading_unit)
-                    invest_amount = curr_price * (
-                        1 - (learner.agent.HANTU_TAX)) * trading_unit
-                    if invest_amount > 0:
-                        # 주당 매수 단가 갱신
-                        learner.agent.avg_buy_price = \
-                            (learner.agent.avg_buy_price * learner.agent.num_stocks - curr_price * trading_unit) \
-                                / (learner.agent.num_stocks - trading_unit) \
-                                    if learner.agent.num_stocks > trading_unit else 0
-                        learner.agent.num_stocks -= trading_unit  # 보유 주식 수를 갱신
-                        learner.agent.balance += invest_amount  # 보유 현금을 갱신
-                        learner.agent.num_sell += 1  # 매도 횟수 증가
+                        ### 매도 주문이 체결된 경우
+                        # 잔액 업데이트
+                        balance = get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)
+                        # 매도 성공 시, 수수료를 적용하여 총 매도 금액 산정 및 변수 업데이트
+                        order_price, trading_unit = int(order_price), int(trading_unit)
+                        income = order_price * (1+ learner.agent.HANTU_TAX) * trading_unit
+                        if invest_amount > 0:
+                            learner.agent.avg_buy_price = \
+                                (learner.agent.avg_buy_price * learner.agent.num_stocks - order_price * trading_unit) \
+                                    / (learner.agent.num_stocks - trading_unit) \
+                                        if learner.agent.num_stocks > trading_unit else 0  # 주당 매도 단가 갱신
+                            learner.agent.balance += income  # 보유 현금을 갱신
+                            learner.agent.num_stocks -= trading_unit  # 보유 주식 수를 갱신
+                            learner.agent.num_sell += 1  # 매도 횟수 증가
+                        break
+                    # end inner 매도 while 
+
+                    ### 📢매도 API 호출
+                    # 매도 가능 여부를 확인하고 attempt_to_sell 함수 호출
+                    # if learner.agent.num_stocks >= trading_unit:
+                    #     attempt_to_sell(api, learner, stock_code, trading_unit, curr_price)
+                    # else:
+                    #     learner.agent.num_hold += 1  # 보유 주식 수가 매도 단위보다 적을 경우
+                    #     print("Not enough stocks to sell")
 
                 else:
                     learner.agent.num_hold += 1
@@ -373,6 +403,8 @@ if __name__ == '__main__':
                 learner.agent.ratio_hold = learner.agent.num_stocks * curr_price \
                     / learner.agent.portfolio_value
                 
+                # 
+
 
                 ### 여기서 분봉 데이터를 1개 불러와서 chart_data의 마지막 row로 추가.
                 stck_cntg_hour,stck_oprc,stck_hgpr,stck_lwpr,stck_prpr,cntg_vol = get_min_data(APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code)
@@ -383,7 +415,7 @@ if __name__ == '__main__':
                     columns=['date','open','high','low','close','volume']
                 )
                 chart_data = pd.concat([chart_data,new_row]).reset_index(drop=True)
-                chart_data.to_csv(f"../data/v1/{stock_code}.csv", index=0)
+                # chart_data.to_csv(f"../data/v1/{stock_code}.csv", index=0)
                 new_pre_data = data_manager_3.preprocess(chart_data.iloc[-120:,:6]).reset_index(drop=True)
                 new_tr = new_pre_data[data_manager_3.COLUMNS_TRAINING_DATA_V1].iloc[-1]
                 new_tr = pd.DataFrame([new_tr])
@@ -402,6 +434,10 @@ if __name__ == '__main__':
 
             # end while
             
+            
+        finally:
+            # chart_data 저장
+
             ### json에 저장
             datas = {
                 "initial_balance" : learner.agent.initial_balance, 
@@ -416,8 +452,8 @@ if __name__ == '__main__':
                 "avg_buy_price" : learner.agent.avg_buy_price
                 }
             write_json(data=datas,filename='./quantylab/properties.json')
-        finally:
-            schedule.clear()
+            # schedule.clear()
+            pass
         
         
 ### *⚠️코드 수정 끝⚠️*  ###
