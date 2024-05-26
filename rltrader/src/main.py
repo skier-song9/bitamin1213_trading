@@ -8,6 +8,7 @@ import time
 import keyring
 import requests
 import pprint
+import traceback
 # import pykis
 import pandas as pd
 
@@ -72,7 +73,7 @@ if __name__ == '__main__':
     policy_network_path = os.path.join(settings.BASE_DIR, 'models', policy_network_name)
 
     # 로그 기록 설정
-    log_path = os.path.join(output_path, f'{output_name}.log')
+    log_path = os.path.join(output_path, f'{output_name}_pred.log') if args.mode == ' predict' else os.path.join(output_path, f'{output_name}.log')
     if os.path.exists(log_path):
         os.remove(log_path)
     logging.basicConfig(format='%(message)s')
@@ -247,7 +248,7 @@ if __name__ == '__main__':
         while True:
             # 현재 시간을 가져와서 한국 시간으로 변환
             current_time = time.localtime()
-            if current_time.tm_hour >= 8 and current_time.tm_min == 59 and current_time.tm_sec >= 0:
+            if current_time.tm_hour >= 8 and current_time.tm_min >= 59 and current_time.tm_sec >= 0:
                 break
             time.sleep(0.5)
 
@@ -269,7 +270,7 @@ if __name__ == '__main__':
                         break
                     continue
                 counter += 1
-                if int(get_dtime_str()) >= 153030:
+                if int(get_dtime_str()) >= 153000:
                     break 
                 print(f"{counter} | {ctl.tm_hour}:{ctl.tm_min}:{ctl.tm_sec} | predict started")
                 result = learner.predict()
@@ -318,6 +319,7 @@ if __name__ == '__main__':
                             buy_counter+=1
                             if buy_counter == 3:
                                 # 더 이상 주문 시도 멈추고 action을 HOLD로 바꿈.
+                                order_price, trading_unit = 0,0
                                 learner.agent.action = learner.agent.ACTION_HOLD
                                 learner.agent.num_hold += 1
                                 break
@@ -362,6 +364,7 @@ if __name__ == '__main__':
                             buy_counter+=1
                             if buy_counter == 3:
                                 # 더 이상 주문 시도 멈추고 action을 HOLD로 바꿈.
+                                order_price, trading_unit = 0,0
                                 learner.agent.action = learner.agent.ACTION_HOLD
                                 learner.agent.num_hold += 1
                                 break
@@ -393,6 +396,7 @@ if __name__ == '__main__':
                     #     print("Not enough stocks to sell")
 
                 else:
+                    order_price, trading_unit = 0,0
                     learner.agent.num_hold += 1
                 
 
@@ -407,9 +411,6 @@ if __name__ == '__main__':
                 learner.agent.ratio_hold = learner.agent.num_stocks * curr_price \
                     / learner.agent.portfolio_value
                 
-                # 
-
-
                 ### 여기서 분봉 데이터를 1개 불러와서 chart_data의 마지막 row로 추가.
                 stck_cntg_hour,stck_oprc,stck_hgpr,stck_lwpr,stck_prpr,cntg_vol = get_min_data(APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code)
                 t = time.localtime()
@@ -465,11 +466,24 @@ if __name__ == '__main__':
                             learner.agent.num_stocks -= trading_unit  # 보유 주식 수를 갱신
                             learner.agent.num_sell += 1  # 매도 횟수 증가
                         break
-                    pass
+                # end 금요일 process
+                    
+                # Record Log
+                try:
+                    if order_price is None and trading_unit is None:
+                        order_price = 0 
+                        trading_unit = 0 
+                    acts = {0:'BUY', 1:'SELL',2:'HOLD'}
+                    logger.debug(
+                        f"c{counter} | #TIME:{get_dtime_str(ct)} | #ACTION:{acts[action]} | #CONFIDENCE:{confidence} | #PRICE:{'HOLD' if action == 2 else order_price} | #UNIT:{'HOLD' if action == 2 else trading_unit} | #PV:{learner.agent.portfolio_value} | #STOCKS:{learner.agent.num_stocks} | #LOSS:{learner.agent.profitloss}"
+                    )
+                except:
+                    traceback.print_exc()
 
             # end while
-            
-            
+        # end try
+        except:
+            traceback.print_exc()
         finally:
             # chart_data 저장
             cd = pd.read_csv(f'../data/v1/{stock_code}.csv')

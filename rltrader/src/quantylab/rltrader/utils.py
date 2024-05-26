@@ -9,9 +9,12 @@ FORMAT_DATE = "%Y%m%d"
 FORMAT_DATETIME = "%Y%m%d%H%M%S"
 FORMAT_HMS = "%H%M%S"
 
-def get_dtime_str(): # 현재 시간을 FORMAT_DATETIME으로 반환
+def get_dtime_str(ct=None): # 현재 시간을 FORMAT_DATETIME으로 반환
+    if ct is None:
+        return datetime.datetime.fromtimestamp(
+            int(time.time())).strftime(FORMAT_HMS)
     return datetime.datetime.fromtimestamp(
-        int(time.time())).strftime(FORMAT_HMS)
+            int(ct)).strftime(FORMAT_HMS)
 
 def get_today_str(): # 현재시간을 FORMAT_DATE으로 반환
     today = datetime.datetime.combine(
