@@ -380,7 +380,7 @@ class ReinforcementLearner:
         
         result = []
 
-        ### 마지막 5개의 row를 추출해 q_sample에 저장
+        ### 마지막 num_steps개의 row를 추출해 q_sample에 저장
         for i in range(-(self.num_steps),0):
             self.environment.observation = self.environment.chart_data.iloc[i]
             next_sample = self.training_data.iloc[i].tolist()

@@ -1,1 +1,0 @@
-{"mode": "train", "ver": "v1", "name": "001470_0326_0524", "stock_code": ["001470"], "rl_method": "a2c", "net": "cnn", "backend": "pytorch", "start_date": "202403261234", "end_date": "202405241530", "lr": 0.001, "discount_factor": 0.99, "balance": 500000000, "is_start_end": 0, "is_mock": 1}

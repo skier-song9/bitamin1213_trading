@@ -1,0 +1,1 @@
+{"mode": "train", "ver": "v1", "name": "002710_0326_0524_120steps_300epoch", "stock_code": ["002710"], "rl_method": "a2c", "net": "cnn", "backend": "pytorch", "start_date": "202403261152", "end_date": "202405241530", "lr": 0.001, "discount_factor": 0.99, "balance": 500000000}
