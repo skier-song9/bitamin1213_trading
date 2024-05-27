@@ -76,16 +76,16 @@ class Agent:
     ### *⚠️코드 수정 시작⚠️*  ###
     def preset(self, INITIAL_BALANCE, BALANCE, NUM_STOCKS, PORTFOLIO_VALUE, NUM_BUY, NUM_SELL, 
          NUM_HOLD, RATIO_HOLD, PROFITLOSS, AVG_BUY_PRICE): 
-        self.initial_balance = INITIAL_BALANCE
-        self.balance = BALANCE
-        self.num_stocks = NUM_STOCKS
-        self.portfolio_value = PORTFOLIO_VALUE
-        self.num_buy = NUM_BUY
-        self.num_sell = NUM_SELL
-        self.num_hold = NUM_HOLD 
-        self.ratio_hold = RATIO_HOLD 
-        self.profitloss = PROFITLOSS
-        self.avg_buy_price = AVG_BUY_PRICE 
+        self.initial_balance = int(INITIAL_BALANCE)
+        self.balance = int(BALANCE)
+        self.num_stocks = int(NUM_STOCKS)
+        self.portfolio_value = int(PORTFOLIO_VALUE)
+        self.num_buy = int(NUM_BUY)
+        self.num_sell = int(NUM_SELL)
+        self.num_hold = int(NUM_HOLD) 
+        self.ratio_hold = float(RATIO_HOLD) 
+        self.profitloss = float(PROFITLOSS)
+        self.avg_buy_price = float(AVG_BUY_PRICE) 
     ### *⚠️코드 수정 끝⚠️*  ###
 
     def set_balance(self, balance):
@@ -154,7 +154,8 @@ class Agent:
         # 매수/매도를 결정했을 때 그 행동을 실제로 수행할 수 있는지 확인
         if action == Agent.ACTION_BUY:
             # 적어도 1주를 살 수 있는지 확인
-            if self.balance < (self.environment.get_price()) * (1 + charge) + add_price:
+            # print(f'balance:{self.balance}, {type(self.balance)}, get_price(): {int(self.environment.get_price())}')
+            if int(self.balance) < (int(self.environment.get_price())) * (1 + charge) + add_price:
                 return False
         elif action == Agent.ACTION_SELL:
             # 주식 잔고가 있는지 확인

@@ -47,8 +47,8 @@ if __name__ == '__main__':
     value_network_name = f'{args.name}_{args.rl_method}_{args.net}_value.mdl'
     policy_network_name = f'{args.name}_{args.rl_method}_{args.net}_policy.mdl'
     start_epsilon = 1 if args.mode in ['train', 'update'] else 0
-    num_epoches = 500 if args.mode in ['train', 'update'] else 1
-    num_steps = 5 if args.net in ['lstm', 'cnn'] else 1
+    num_epoches = 300 if args.mode in ['train', 'update'] else 1
+    num_steps = 120 if args.net in ['lstm', 'cnn'] else 1
 
     # Backend 설정
     os.environ['RLTRADER_BACKEND'] = args.backend
@@ -107,9 +107,10 @@ if __name__ == '__main__':
     keyring.set_password('app_key','user',api_keys['app_key'])
     keyring.set_password('app_secret','user',api_keys['app_secret'])
     APP_KEY, APP_SECRET, ACCOUNT = api_keys['app_key'], api_keys['app_secret'], api_keys['account']
-    res = get_access_token(APP_KEY, APP_SECRET, investment_type)
-    pprint.pprint(res.json(), indent=4)
-    ACCESS_TOKEN = res.json()['access_token']
+    # res = get_access_token(APP_KEY, APP_SECRET, investment_type)
+    # pprint.pprint(res.json(), indent=4)
+    # ACCESS_TOKEN = res.json()['access_token']
+    ACCESS_TOKEN = api_keys['access_token']
     key_info = {
         "appkey": APP_KEY,                  
         "appsecret": APP_SECRET 
@@ -221,9 +222,9 @@ if __name__ == '__main__':
         '''
         if args.is_start_end == 0: ### 월요일에만 실행되는 코드
             ### API 활용해서 내 계좌에서 잔액 불러오기
-            INITIAL_BALANCE = get_balance_api(
+            INITIAL_BALANCE = int(get_balance_api(
                 ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type
-            )
+            ))
             props['initial_balance'] = INITIAL_BALANCE
             props['balance'] = INITIAL_BALANCE
             props['num_stocks'] = 0
@@ -248,7 +249,7 @@ if __name__ == '__main__':
         while True:
             # 현재 시간을 가져와서 한국 시간으로 변환
             current_time = time.localtime()
-            if current_time.tm_hour >= 8 and current_time.tm_min >= 59 and current_time.tm_sec >= 0:
+            if current_time.tm_hour >= 8 and current_time.tm_min >= 00 and current_time.tm_sec >= 0:
                 break
             time.sleep(0.5)
 
@@ -276,7 +277,7 @@ if __name__ == '__main__':
                 result = learner.predict()
 
                 ### predict의 result로 매수/매도/관망 행동 판단 후 수행
-                pred_value, pred_policy = result[-2],result[-1] 
+                pred_value, pred_policy = result[0][-2],result[0][-1] 
                 action, confidence, exploration = learner.agent.decide_action(
                     pred_value, pred_policy, 0 # epsilon은 0으로 해야 모험을 안 함.
                 )
@@ -293,6 +294,9 @@ if __name__ == '__main__':
                 if action == learner.agent.ACTION_BUY:
                     # 매수할 단위를 판단
                     trading_unit = learner.agent.decide_trading_unit(confidence)
+                    if counter == 1:
+                        recent_volume =  int(int(learner.environment.observation.iloc[5]) * 2)
+                        trading_unit = min(trading_unit, recent_volume)
                     '''
                     while True:
                         1. 매수가능조회(get_possible)해서 매수가능수량 조회 >> min(trading_unit, possible)
@@ -305,6 +309,7 @@ if __name__ == '__main__':
                     buy_counter = 0
                     while 1:
                         possible_unit = get_possible(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code)
+                        time.sleep(1)
                         trading_unit = min(trading_unit, int(possible_unit))
 
                         order_id, order_time = buy_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
@@ -312,9 +317,11 @@ if __name__ == '__main__':
                         time.sleep(5)
 
                         order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
+                        time.sleep(1)
                         if not is_buyed:
                             ### 주문 취소
                             rt_cd, order_time = cancel_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,order_id)
+                            time.sleep(1)
                             print(f"{order_time}, {order_id} 매수 주문이 5초내에 체결되지 않아 취소되었습니다.")
                             buy_counter+=1
                             if buy_counter == 3:
@@ -327,7 +334,8 @@ if __name__ == '__main__':
 
                         ### 주문이 체결된 경우
                         # 잔액 업데이트
-                        balance = get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)
+                        balance = int(get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type))
+                        time.sleep(1)
                         # 매수 성공 시, 수수료를 적용하여 총 매수 금액 산정 및 변수 업데이트
                         order_price, trading_unit = int(order_price), int(trading_unit)
                         hantu_charge, add_price = get_charge(order_price, trading_unit)
@@ -357,9 +365,11 @@ if __name__ == '__main__':
                         time.sleep(5)
                     #     print(get_time_str())
                         order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
+                        time.sleep(1)
                         if not is_buyed:
                             ### 주문 취소
                             rt_cd, order_time = cancel_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,order_id)
+                            time.sleep(1)
                             print(f"{order_time}, {order_id} 매도 주문이 5초내에 체결되지 않아 취소되었습니다.")
                             buy_counter+=1
                             if buy_counter == 3:
@@ -372,7 +382,8 @@ if __name__ == '__main__':
 
                         ### 매도 주문이 체결된 경우
                         # 잔액 업데이트
-                        balance = get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)
+                        balance = int(get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type))
+                        time.sleep(1)
                         # 매도 성공 시, 수수료를 적용하여 총 매도 금액 산정 및 변수 업데이트
                         order_price, trading_unit = int(order_price), int(trading_unit)
                         income = order_price * (1+ learner.agent.HANTU_TAX) * trading_unit
@@ -406,13 +417,16 @@ if __name__ == '__main__':
                 json파일에 저장 
                 '''
                 ### 계산.
-                learner.agent.portfolio_value = get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)
+                learner.agent.portfolio_value = int(get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type))
+                time.sleep(1)
                 learner.agent.profitloss = learner.agent.portfolio_value / learner.agent.initial_balance - 1
                 learner.agent.ratio_hold = learner.agent.num_stocks * curr_price \
                     / learner.agent.portfolio_value
                 
                 ### 여기서 분봉 데이터를 1개 불러와서 chart_data의 마지막 row로 추가.
+                time.sleep(1)
                 stck_cntg_hour,stck_oprc,stck_hgpr,stck_lwpr,stck_prpr,cntg_vol = get_min_data(APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code)
+                time.sleep(1)
                 t = time.localtime()
                 stck_cntg_hour = f"{t.tm_year}{t.tm_mon:02}{t.tm_mday:02}{stck_cntg_hour[:4]}"
                 new_row = pd.DataFrame(
@@ -439,6 +453,7 @@ if __name__ == '__main__':
                     while 1:
                         trading_unit = learner.agent.num_stocks                        
                         order_id, order_time = sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
+                        time.sleep(1)
                         print(f"{order_time}, {order_id} 매도 주문")
                     #     print(get_time_str())
                         time.sleep(5)
@@ -447,6 +462,7 @@ if __name__ == '__main__':
                         if not is_buyed:
                             ### 주문 취소
                             rt_cd, order_time = cancel_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,order_id)
+                            time.sleep(1)
                             print(f"{order_time}, {order_id} 매도 주문이 5초내에 체결되지 않아 취소되었습니다.")
                             buy_counter+=1
                             if buy_counter == 3:
@@ -456,7 +472,8 @@ if __name__ == '__main__':
 
                         ### 매도 주문이 체결된 경우
                         # 잔액 업데이트
-                        balance = get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)
+                        balance = int(get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type))
+                        time.sleep(1)
                         # 매도 성공 시, 수수료를 적용하여 총 매도 금액 산정 및 변수 업데이트
                         order_price, trading_unit = int(order_price), int(trading_unit)
                         income = order_price * (1+ learner.agent.HANTU_TAX) * trading_unit

@@ -198,7 +198,7 @@ def select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_c
         "ACNT_PRDT_CD" : f"{ACCOUNT.split('-')[1]}",
         "INQR_STRT_DT" : f"{t.tm_year}{t.tm_mon:02}{t.tm_mday:02}",
         "INQR_END_DT" : f"{t.tm_year}{t.tm_mon:02}{t.tm_mday:02}",
-        "SLL_BUY_DVSN_CD" : "02", # 매수
+        "SLL_BUY_DVSN_CD" : "00", # 매수
         "INQR_DVSN" : "00", # 역순조회 (최근 체결이 먼저 출력됨)
         "PDNO" : f"{stock_code}",
         "CCLD_DVSN" : "00", # 00=전체, 01=체결, 02=미체결
@@ -284,11 +284,11 @@ def get_min_data(APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code):
     if res.status_code == 200:
         resp = res.json()
         stck_cntg_hour=resp['output2'][0]['stck_cntg_hour']
-        stck_oprc=resp['output2'][0]['stck_oprc']
-        stck_hgpr=resp['output2'][0]['stck_hgpr']
-        stck_lwpr=resp['output2'][0]['stck_lwpr']
-        stck_prpr=resp['output2'][0]['stck_prpr']
-        cntg_vol=resp['output2'][0]['cntg_vol']
+        stck_oprc=int(resp['output2'][0]['stck_oprc'])
+        stck_hgpr=int(resp['output2'][0]['stck_hgpr'])
+        stck_lwpr=int(resp['output2'][0]['stck_lwpr'])
+        stck_prpr=int(resp['output2'][0]['stck_prpr'])
+        cntg_vol=int(resp['output2'][0]['cntg_vol'])
         return (stck_cntg_hour,stck_oprc,stck_hgpr,stck_lwpr,stck_prpr,cntg_vol)
     else :
         print("(get_min_data) ERROR when call API:",res.status_code,res.text)

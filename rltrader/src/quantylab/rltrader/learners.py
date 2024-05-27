@@ -385,8 +385,8 @@ class ReinforcementLearner:
             self.environment.observation = self.environment.chart_data.iloc[i]
             next_sample = self.training_data.iloc[i].tolist()
             gp = self.environment.observation.iloc[self.environment.PRICE_IDX]
-            self.agent.ratio_hold = self.agent.num_stocks * int(gp) \
-                / self.agent.portfolio_value
+            self.agent.ratio_hold = int(self.agent.num_stocks) * int(gp) \
+                / int(self.agent.portfolio_value)
             next_sample.extend([self.agent.ratio_hold,self.agent.profitloss,(gp / self.agent.avg_buy_price) - 1 \
                 if self.agent.avg_buy_price > 0 else 0])
             q_sample.append(next_sample)
