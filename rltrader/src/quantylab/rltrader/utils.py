@@ -37,7 +37,7 @@ def read_json(filename):
 
 def write_json(data, filename):
     with open(filename, 'w') as f:
-        json.dump(data, f, indent=4)
+        json.dump(data,f,indent=4)
 
 # 보안 인증키 발급
 def get_access_token(APP_KEY,APP_SECRET, investment_type):
@@ -218,8 +218,12 @@ def select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_c
     res = requests.get(url, params=params, headers=headers)
     if res.status_code == 200:
         resp = res.json()
+        tot_ccld_amt = int(resp['output2']['tot_ccld_amt'])
+        tot_ccld_qty = int(resp['output2']['tot_ccld_qty'])
+        op = int(tot_ccld_amt / tot_ccld_qty)
         order_id_ = resp['output1'][0]['odno']
-        order_price = resp['output1'][0]['avg_prvs'] # 체결 평균단가 = (총체결금액/총체결수량) # 체결이 안 됐으면 order_price는 0
+        order_price =  int(resp['output1'][0]['avg_prvs'])
+        # order_price = order_price if order_price==0 else op # 체결 평균단가 = (총체결금액/총체결수량) # 체결이 안 됐으면 order_price는 0
         is_buyed = True if int(resp['output1'][0]['ord_unpr']) == 0 else False # 주문단가가 0으로 나오면 매수주문이 체결된 것임.
         print(f"{order_id}에 대한 체결 조회 {int(order_id_)}, 주문단가: {order_price}, 체결여부: {is_buyed}")
         return (order_price, is_buyed) 
@@ -364,3 +368,15 @@ def attempt_to_sell(api,learner,stock_code, trading_unit, curr_price):
             curr_price -= price_decrease # attempt_to_sell 함수 내부에서 curr_price를 5원 낮춘 값으로 저장함으로써 후에 감소된 가격으로 매도하게 됨.
             print(f"Decreasing price by {price_decrease} to {curr_price} and retrying...")
             time.sleep(decrease_interval - (elapsed_time % decrease_interval))
+
+if __name__ == '__main__':
+    api = read_json('../api.json')
+    real = api['real_invest']
+    mock = api['mock_invest']
+    res = get_access_token(real['app_key'],real['app_secret'],'real_invest')
+    api['real_invest']['access_token'] = res.json()['access_token'] 
+    time.sleep(1)
+    res = get_access_token(mock['app_key'],mock['app_secret'],'mock_invest')
+    api['mock_invest']['access_token'] = res.json()['access_token']
+    print(res.json())
+    write_json(api,'../api.json')

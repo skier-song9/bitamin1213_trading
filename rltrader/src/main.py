@@ -134,8 +134,8 @@ if __name__ == '__main__':
         assert len(chart_data) >= num_steps
         
         # 최소/최대 단일 매매 금액 설정
-        min_trading_price = 1000
-        max_trading_price = 1000000000
+        min_trading_price = 500
+        max_trading_price = 10000000
 
         # 공통 파라미터 설정
         common_params = {'rl_method': args.rl_method, 
@@ -271,7 +271,7 @@ if __name__ == '__main__':
                         break
                     continue
                 counter += 1
-                if int(get_dtime_str()) >= 153000:
+                if int(get_dtime_str()) >= 152000:
                     break 
                 print(f"{counter} | {ctl.tm_hour}:{ctl.tm_min}:{ctl.tm_sec} | predict started")
                 result = learner.predict()
@@ -281,6 +281,7 @@ if __name__ == '__main__':
                 action, confidence, exploration = learner.agent.decide_action(
                     pred_value, pred_policy, 0 # epsilon은 0으로 해야 모험을 안 함.
                 )
+                print(f'action:{action}, confidence:{confidence}')
                 
                 ### 매도/매수 API 코드 - agent의 act()함수를 predict에 맞게 구현
                 '''
@@ -294,9 +295,9 @@ if __name__ == '__main__':
                 if action == learner.agent.ACTION_BUY:
                     # 매수할 단위를 판단
                     trading_unit = learner.agent.decide_trading_unit(confidence)
-                    if counter == 1:
-                        recent_volume =  int(int(learner.environment.observation.iloc[5]) * 2)
-                        trading_unit = min(trading_unit, recent_volume)
+                    # if counter == 1:
+                    # recent_volume =  int(int(learner.environment.observation.iloc[5]) * 2.5)
+                    # trading_unit = min(trading_unit, recent_volume)
                     '''
                     while True:
                         1. 매수가능조회(get_possible)해서 매수가능수량 조회 >> min(trading_unit, possible)
@@ -313,7 +314,7 @@ if __name__ == '__main__':
                         trading_unit = min(trading_unit, int(possible_unit))
 
                         order_id, order_time = buy_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
-                        print(f"{order_time}, {order_id} 매수 주문")
+                        print(f"{order_time}, {order_id} 매수 주문, 주문수량: {trading_unit}")
                         time.sleep(5)
 
                         order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
@@ -360,7 +361,7 @@ if __name__ == '__main__':
                         trading_unit = min(trading_unit, learner.agent.num_stocks)
                         
                         order_id, order_time = sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
-                        print(f"{order_time}, {order_id} 매도 주문")
+                        print(f"{order_time}, {order_id} 매도 주문, 주문수량: {trading_unit}")
                     #     print(get_time_str())
                         time.sleep(5)
                     #     print(get_time_str())
@@ -498,6 +499,30 @@ if __name__ == '__main__':
                     traceback.print_exc()
 
             # end while
+
+            ### 여기서 분봉 데이터를 한 번 더 불러옴 >> 15시30분꺼
+            time.sleep(1)
+            stck_cntg_hour,stck_oprc,stck_hgpr,stck_lwpr,stck_prpr,cntg_vol = get_min_data(APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code)
+            stck_cntg_hour = '152000'
+            time.sleep(1)
+            t = time.localtime()
+            stck_cntg_hour = f"{t.tm_year}{t.tm_mon:02}{t.tm_mday:02}{stck_cntg_hour[:4]}"
+            new_row = pd.DataFrame(
+                [[stck_cntg_hour,stck_oprc,stck_hgpr,stck_lwpr,stck_prpr,cntg_vol]],
+                columns=['date','open','high','low','close','volume']
+            )
+            chart_data = pd.concat([chart_data,new_row]).reset_index(drop=True)
+            # chart_data.to_csv(f"../data/v1/{stock_code}.csv", index=0)
+            new_pre_data = data_manager_3.preprocess(chart_data.iloc[-120:,:6].reset_index(drop=True))
+            new_tr = new_pre_data[data_manager_3.COLUMNS_TRAINING_DATA_V1].iloc[-1]
+            new_tr = pd.DataFrame([new_tr])
+            training_data = pd.concat([training_data, new_tr]).reset_index(drop=True)
+            # update learner's data
+            learner.chart_data = chart_data
+            learner.training_data = training_data
+            learner.environment.chart_data = chart_data
+            learner.agent.environment = learner.environment 
+
         # end try
         except:
             traceback.print_exc()
@@ -525,6 +550,10 @@ if __name__ == '__main__':
             write_json(data=datas,filename='./quantylab/properties.json')
             # schedule.clear()
             # pass
+
+            ## access_token 폐기
+
+
             print("✅finish",get_time_str())
         
         
