@@ -1,21 +1,12 @@
 {
-    "initial_balance" : 0, 
-
-    "balance" : 0,
-    
-    "num_stocks" : 0,
-
-    "portfolio_value" : 0,
-    
-    "num_buy" : 0,
-
-    "num_sell" : 0,
-
-    "num_hold" : 0, 
-    
-    "ratio_hold" : 0,  
-    
-    "profitloss" : 0,
-
-    "avg_buy_price" : 0
+    "initial_balance": 0,
+    "balance": 0,
+    "num_stocks": 0,
+    "portfolio_value": 0,
+    "num_buy": 0,
+    "num_sell": 0,
+    "num_hold": 0,
+    "ratio_hold": 0,
+    "profitloss": 0,
+    "avg_buy_price": 0
 }

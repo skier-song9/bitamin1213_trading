@@ -552,7 +552,22 @@ if __name__ == '__main__':
             # pass
 
             ## access_token 폐기
-
+            try:
+                host = "https://openapivts.koreainvestment.com:29443" if investment_type=='mock_inverst' else 'https://openapi.koreainvestment.com:9443'
+                endpoint = "/oauth2/revokeP"
+                url = host+endpoint
+                headers = {"content-type":"application/json; charset=UTF-8"}
+                body = {"appkey":APP_KEY, 
+                        "appsecret":APP_SECRET,
+                        "token":ACCESS_TOKEN
+                        }
+                resp = requests.post(url, headers=headers, data=json.dumps(body))
+                if resp.json()['code'] == 200:
+                    print("access token successfully revoked.")
+                else:
+                    pprint.pprint(resp.json()['message'])
+            except:
+                print("access token already revoked.")
 
             print("✅finish",get_time_str())
         
