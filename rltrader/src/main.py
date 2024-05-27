@@ -363,7 +363,7 @@ if __name__ == '__main__':
                         order_id, order_time = sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
                         print(f"{order_time}, {order_id} 매도 주문, 주문수량: {trading_unit}")
                     #     print(get_time_str())
-                        time.sleep(5)
+                        time.sleep(15)
                     #     print(get_time_str())
                         order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
                         time.sleep(1)
@@ -373,7 +373,7 @@ if __name__ == '__main__':
                             time.sleep(1)
                             print(f"{order_time}, {order_id} 매도 주문이 5초내에 체결되지 않아 취소되었습니다.")
                             buy_counter+=1
-                            if buy_counter == 3:
+                            if buy_counter == 2:
                                 # 더 이상 주문 시도 멈추고 action을 HOLD로 바꿈.
                                 order_price, trading_unit = 0,0
                                 learner.agent.action = learner.agent.ACTION_HOLD
@@ -457,7 +457,7 @@ if __name__ == '__main__':
                         time.sleep(1)
                         print(f"{order_time}, {order_id} 매도 주문")
                     #     print(get_time_str())
-                        time.sleep(5)
+                        time.sleep(15)
                     #     print(get_time_str())
                         order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
                         if not is_buyed:
@@ -466,7 +466,7 @@ if __name__ == '__main__':
                             time.sleep(1)
                             print(f"{order_time}, {order_id} 매도 주문이 5초내에 체결되지 않아 취소되었습니다.")
                             buy_counter+=1
-                            if buy_counter == 3:
+                            if buy_counter == 2:
                                 print(get_time_str(),'잔량 매도 실패')
                                 break
                             continue
