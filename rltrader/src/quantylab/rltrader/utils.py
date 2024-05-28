@@ -371,11 +371,11 @@ def attempt_to_sell(api,learner,stock_code, trading_unit, curr_price):
 
 if __name__ == '__main__':
     api = read_json('../api.json')
-    real = api['real_invest']
+    # real = api['real_invest']
     mock = api['mock_invest']
-    res = get_access_token(real['app_key'],real['app_secret'],'real_invest')
-    api['real_invest']['access_token'] = res.json()['access_token'] 
-    time.sleep(1)
+    # res = get_access_token(real['app_key'],real['app_secret'],'real_invest')
+    # api['real_invest']['access_token'] = res.json()['access_token'] 
+    # time.sleep(1)
     res = get_access_token(mock['app_key'],mock['app_secret'],'mock_invest')
     api['mock_invest']['access_token'] = res.json()['access_token']
     print(res.json())

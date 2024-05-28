@@ -73,7 +73,7 @@ if __name__ == '__main__':
     policy_network_path = os.path.join(settings.BASE_DIR, 'models', policy_network_name)
 
     # 로그 기록 설정
-    log_path = os.path.join(output_path, f'{output_name}_pred.log') if args.mode == ' predict' else os.path.join(output_path, f'{output_name}.log')
+    log_path = os.path.join(output_path, f'{output_name}_pred_{get_today_str()}.log') if args.mode == ' predict' else os.path.join(output_path, f'{output_name}.log')
     if os.path.exists(log_path):
         os.remove(log_path)
     logging.basicConfig(format='%(message)s')
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         while True:
             # 현재 시간을 가져와서 한국 시간으로 변환
             current_time = time.localtime()
-            if current_time.tm_hour >= 8 and current_time.tm_min >= 00 and current_time.tm_sec >= 0:
+            if current_time.tm_hour >= 8 and current_time.tm_min >= 59 and current_time.tm_sec >= 0:
                 break
             time.sleep(0.5)
 
@@ -387,7 +387,7 @@ if __name__ == '__main__':
                         time.sleep(1)
                         # 매도 성공 시, 수수료를 적용하여 총 매도 금액 산정 및 변수 업데이트
                         order_price, trading_unit = int(order_price), int(trading_unit)
-                        income = order_price * (1+ learner.agent.HANTU_TAX) * trading_unit
+                        invest_amount = order_price * (1+ learner.agent.HANTU_TAX) * trading_unit
                         if invest_amount > 0:
                             learner.agent.avg_buy_price = \
                                 (learner.agent.avg_buy_price * learner.agent.num_stocks - order_price * trading_unit) \
@@ -418,7 +418,10 @@ if __name__ == '__main__':
                 json파일에 저장 
                 '''
                 ### 계산.
-                learner.agent.portfolio_value = int(get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type))
+                if counter == 1:
+                    continue
+                invest_amount = 0 if invest_amount else invest_amount
+                learner.agent.portfolio_value = int(get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)) + invest_amount
                 time.sleep(1)
                 learner.agent.profitloss = learner.agent.portfolio_value / learner.agent.initial_balance - 1
                 learner.agent.ratio_hold = learner.agent.num_stocks * curr_price \
