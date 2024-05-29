@@ -378,5 +378,5 @@ if __name__ == '__main__':
     # time.sleep(1)
     res = get_access_token(mock['app_key'],mock['app_secret'],'mock_invest')
     api['mock_invest']['access_token'] = res.json()['access_token']
-    print(res.json())
+    print(res.json()['access_token_token_expired'])
     write_json(api,'../api.json')

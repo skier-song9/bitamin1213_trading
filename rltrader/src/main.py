@@ -292,6 +292,7 @@ if __name__ == '__main__':
                     action = learner.agent.ACTION_HOLD
                 curr_price = learner.environment.get_price()
                 do_nothing = False
+                invest_amount=None
                 if action == learner.agent.ACTION_BUY:
                     # 매수할 단위를 판단
                     trading_unit = learner.agent.decide_trading_unit(confidence)
@@ -420,7 +421,7 @@ if __name__ == '__main__':
                 ### 계산.
                 if counter == 1:
                     continue
-                invest_amount = 0 if invest_amount else invest_amount
+                invest_amount = invest_amount if invest_amount else 0
                 learner.agent.portfolio_value = int(get_balance_api(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type)) + invest_amount
                 time.sleep(1)
                 learner.agent.profitloss = learner.agent.portfolio_value / learner.agent.initial_balance - 1
