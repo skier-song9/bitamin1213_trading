@@ -220,6 +220,8 @@ def select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_c
         resp = res.json()
         tot_ccld_amt = int(resp['output2']['tot_ccld_amt'])
         tot_ccld_qty = int(resp['output2']['tot_ccld_qty'])
+        if tot_ccld_qty == 0:
+            tot_ccld_qty = 1
         op = int(tot_ccld_amt / tot_ccld_qty)
         order_id_ = resp['output1'][0]['odno']
         order_price =  int(resp['output1'][0]['avg_prvs'])

@@ -249,7 +249,7 @@ if __name__ == '__main__':
         while True:
             # 현재 시간을 가져와서 한국 시간으로 변환
             current_time = time.localtime()
-            if current_time.tm_hour >= 8 and current_time.tm_min >= 59 and current_time.tm_sec >= 0:
+            if current_time.tm_hour >= 9 and current_time.tm_min >= 00 and current_time.tm_sec >= 1:
                 break
             time.sleep(0.5)
 
@@ -314,9 +314,20 @@ if __name__ == '__main__':
                         time.sleep(1)
                         trading_unit = min(trading_unit, int(possible_unit))
 
-                        order_id, order_time = buy_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
+                        try:
+                            order_id, order_time = buy_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
+                            time.sleep(10)
+                        except:
+                            order_id, order_time = '###', '###'
+                            buy_counter += 1
+                            time.sleep(1)
+                            if buy_counter == 5:
+                                order_price, trading_unit = 0,0
+                                learner.agent.action = learner.agent.ACTION_HOLD
+                                learner.agent.num_hold += 1
+                                break
+                            continue
                         print(f"{order_time}, {order_id} 매수 주문, 주문수량: {trading_unit}")
-                        time.sleep(5)
 
                         order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
                         time.sleep(1)
@@ -324,9 +335,9 @@ if __name__ == '__main__':
                             ### 주문 취소
                             rt_cd, order_time = cancel_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,order_id)
                             time.sleep(1)
-                            print(f"{order_time}, {order_id} 매수 주문이 5초내에 체결되지 않아 취소되었습니다.")
+                            print(f"{order_time}, {order_id} 매수 주문이 10초내에 체결되지 않아 취소되었습니다.")
                             buy_counter+=1
-                            if buy_counter == 3:
+                            if buy_counter == 2:
                                 # 더 이상 주문 시도 멈추고 action을 HOLD로 바꿈.
                                 order_price, trading_unit = 0,0
                                 learner.agent.action = learner.agent.ACTION_HOLD
@@ -361,11 +372,22 @@ if __name__ == '__main__':
                         trading_unit = learner.agent.decide_trading_unit(confidence)
                         trading_unit = min(trading_unit, learner.agent.num_stocks)
                         
-                        order_id, order_time = sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
+                        try:
+                            order_id, order_time = sell_stock(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code,trading_unit)
+                            time.sleep(15)
+                        except:
+                            order_id, order_time = '###', '###'
+                            buy_counter += 1
+                            time.sleep(1)
+                            if buy_counter == 5:
+                                order_price, trading_unit = 0,0
+                                learner.agent.action = learner.agent.ACTION_HOLD
+                                learner.agent.num_hold += 1
+                                break
+                            continue
                         print(f"{order_time}, {order_id} 매도 주문, 주문수량: {trading_unit}")
-                    #     print(get_time_str())
-                        time.sleep(15)
-                    #     print(get_time_str())
+
+
                         order_price, is_buyed = select_order(ACCOUNT,APP_KEY,APP_SECRET,ACCESS_TOKEN,investment_type,stock_code, order_id)
                         time.sleep(1)
                         if not is_buyed:
@@ -452,7 +474,7 @@ if __name__ == '__main__':
 
                 ### is_start_end 값이 2일 때 (금요일)
                 # counter 390번일 때 -> 마지막 실행 시 주식을 여전히 보유하고 있으면 모두 매도하는 코드
-                if (args.is_start_end ==2) and (int(get_dtime_str()) >= 152800):
+                if (args.is_start_end ==2) and (int(get_dtime_str()) >= 152500):
                     # 모두 매도
                     buy_counter = 0
                     while 1:

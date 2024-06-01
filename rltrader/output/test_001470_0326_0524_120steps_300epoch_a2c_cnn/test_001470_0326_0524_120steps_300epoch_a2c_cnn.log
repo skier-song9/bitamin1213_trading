@@ -1,0 +1,4 @@
+{"mode": "test", "ver": "v1", "name": "001470_0326_0524_120steps_300epoch", "stock_code": ["001470"], "rl_method": "a2c", "net": "cnn", "backend": "pytorch", "start_date": "202405241322", "end_date": "202405311530", "lr": 0.001, "discount_factor": 0.99, "balance": 500000000, "is_start_end": 0, "is_mock": 1}
+[001470] RL:a2c NET:cnn LR:0.001 DF:0.99 
+[001470][Epoch 1/1] Epsilon:0.0000 #Expl.:1905/1905 #Buy:656 #Sell:611 #Hold:638 #Stocks:127455 PV:476,815,303 Loss:0.000000 ET:4.1965
+[001470] Elapsed Time:14.8422 Max PV:476,815,303 #Win:0

@@ -1,12 +1,12 @@
 {
     "initial_balance": 500000000,
-    "balance": 398527454,
-    "num_stocks": 0,
-    "portfolio_value": 398527454,
-    "num_buy": 164,
-    "num_sell": 168,
-    "num_hold": 218,
-    "ratio_hold": 0.0,
-    "profitloss": -0.202945092,
-    "avg_buy_price": 0
+    "balance": 230820327,
+    "num_stocks": 149936,
+    "portfolio_value": 236790041.4,
+    "num_buy": 305,
+    "num_sell": 309,
+    "num_hold": 474,
+    "ratio_hold": 1.0485830169714223,
+    "profitloss": -0.5264199171999999,
+    "avg_buy_price": 1687.670144893858
 }
