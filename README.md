@@ -9,8 +9,8 @@
     - [🔖Reference](#Reference)
 - [🤗Environment](#Environment)
 - [🦾Training](#Training)
-- [🛠️Test (backtrading)](#Test (backtrading))
-- [🛠️Test (System trading)](#Test (System trading))
+- [🛠️Test (Backtrading)](#Test-(Backtrading))
+- [🛠️Test (System trading)](#Test-(SystemTrading))
 <br>
 
 
@@ -86,8 +86,8 @@ pip install -r trading_requirements.txt
 </p>
 
 
-<a name='Test (backtrading)'></a>
-## 🛠️Test (backtrading)
+<a name='Test-(Backtrading)'></a>
+## 🛠️Test (Backtrading)
 <p>check the start_date and end_date of stock. start_date should be the 120 time steps before you want to start the test because of input size of CNN.<br>
 e.g.) if you want to backtrade from 2024.05.27 09:01 to 2024.05.31 15:30 then you should set the start_date as 202405241322 120 time steps before the 2024.05.27 09:01.</p>
 <pre>
@@ -96,8 +96,8 @@ python main.py --mode test --ver v1 --name 001470_0326_0524_120steps_300epoch --
 </code></pre>
 
 
-<a name='Test (System trading)'></a>
-## 🛠️Test (System trading)
+<a name='Test-(SystemTrading)'></a>
+## 🛠️Test (System Trading)
 
 <h5>setting</h5>
 You should place 'api.json' in order to use KIS API for trading.
