@@ -9,6 +9,8 @@
     - [🔖Reference](#Reference)
 - [🤗Environment](#Environment)
 - [🦾Training](#Training)
+- [🛠️Test (backtrading)](#Test (backtrading))
+- [🛠️Test (System trading)](#Test (System trading))
 <br>
 
 
@@ -84,3 +86,61 @@ pip install -r trading_requirements.txt
 </p>
 
 
+<a name='Test (backtrading)'></a>
+## 🛠️Test (backtrading)
+<p>check the start_date and end_date of stock. start_date should be the 120 time steps before you want to start the test because of input size of CNN.<br>
+e.g.) if you want to backtrade from 2024.05.27 09:01 to 2024.05.31 15:30 then you should set the start_date as 202405241322 120 time steps before the 2024.05.27 09:01.</p>
+<pre>
+<code class='bash'>
+python main.py --mode test --ver v1 --name 001470_0326_0524_120steps_300epoch --stock_code 001470 --rl_method a2c --net cnn --backend pytorch --balance 500000000 --start_date 202405241322 --end_date 202405311530
+</code></pre>
+
+
+<a name='Test (System trading)'></a>
+## 🛠️Test (System trading)
+
+<h5>setting</h5>
+You should place 'api.json' in oreder to use KIS API for trading.
+<ul style='list-style-type:decimal;'>
+    <li>Make <a href="https://securities.koreainvestment.com/main/Main.jsp" target="blank">KoreaInvestment</a> account.</li>
+    <li>Follow the menu ‘트레이딩’ > ‘모의투자’ > ‘주식/선물옵션 모의투자 > 모의투자안내’ > ‘신청/재도전’</li>
+    <li>Set initial balance and trading period as you wish.</li>
+    <li>Go to API center <a target="blank" href="https://apiportal.koreainvestment.com/intro">KIS API</a>. </li>
+    <li>Apply for an API(<a href="https://securities.koreainvestment.com/main/customer/systemdown/RestAPIService.jsp" target="blank">url</a>).</li>
+    <li>Set your api.json file as below and place the file under <code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">/bitamin1213_trading/rltrader/src/quantylab/rltrader/</code></li>
+<pre>
+<code class='json'>
+{
+    "real_invest" : {
+        "account" : "실전투자계좌번호8자리-01", 
+        "app_key" : "실전투자계좌 APP Key 복사해서 붙여넣기",
+        "app_secret" : "실전투자계좌 APP Secret 복사해서 붙여넣기",
+        "access_token" : ""
+    },
+        
+        "mock_invest" : {
+            "account" : "모의투자계좌번호8자리-01",
+            "app_key" : "모의투자계좌 APP Key 복사해서 붙여넣기",
+            "app_secret" : "모의투자계좌 APP Secret 복사해서 붙여넣기",
+            "access_token" : ""        
+        }    
+}</code></pre>
+<li>Get access token by runnig utils.py</li>
+<pre>
+<code class='bash'>
+cd /bitamin1213_trading/rltrader/src/quantylab/rltrader
+python utils.py
+</pre></code>
+</ul>
+<h5>system trading</h5>
+For real-time system trading, use 'predict' keyword. Setting start_date is same as backtrading, 120 time steps before.<br>
+You should run system trading code day by day. 'predict' method is just for a day trading.
+<pre>
+<code class='bash'>
+python main.py --mode predict --ver v1 --name 001470_0326_0524_120steps_300epoch --stock_code 001470 --rl_method a2c --net cnn --backend pytorch --balance 500000000 --start_date 202405231346 --end_date 202405281530 --is_start_end 2 --is_mock 1
+</code></pre>
+<ul style='list-style-type:circle;'>
+<li><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">--is_start_end</code> : 0 for Monday, 1 for Tuesday~Thursday, 2 for Friday.</li>
+<li><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">--is_mock</code> : 0 for real investment, 1 for mock investment.</li>
+</ul>
+Access_token is revoked after the system trading code ends. So you should get access_token before running predict code everyday.
