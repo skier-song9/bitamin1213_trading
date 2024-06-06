@@ -57,22 +57,6 @@ pip install -r trading_requirements.txt
 ## 🦾Training
 
 <ul style='list-style-type:decimal;'>
-    <li>get api key from <a href="https://apiportal.koreainvestment.com/">Korea Investment</a> and place it under <code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">/rltrader/src/quantylab/</code></li>
-    <pre>
-<code class='json'>{
-    "real_invest" : {
-        "account" : "",
-        "app_key" : "",
-        "app_secret" : "",
-        "access_token" : ""
-    },
-    "mock_invest" : {
-        "account" : "",
-        "app_key" : "",
-        "app_secret" : "",
-        "access_token" : ""
-    }
-}</code></pre>
     <li><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">cd rltrader/src/</code></li>
     <li>refer to <a href="https://github.com/quantylab/rltrader?tab=readme-ov-file#%EC%8B%A4%ED%96%89">quantylab</a> for detailed parameters descriptions.<br>e.g.)</li>
     <pre>
