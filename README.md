@@ -100,7 +100,7 @@ python main.py --mode test --ver v1 --name 001470_0326_0524_120steps_300epoch --
 ## 🛠️Test (System trading)
 
 <h5>setting</h5>
-You should place 'api.json' in oreder to use KIS API for trading.
+You should place 'api.json' in order to use KIS API for trading.
 <ul style='list-style-type:decimal;'>
     <li>Make <a href="https://securities.koreainvestment.com/main/Main.jsp" target="blank">KoreaInvestment</a> account.</li>
     <li>Follow the menu ‘트레이딩’ > ‘모의투자’ > ‘주식/선물옵션 모의투자 > 모의투자안내’ > ‘신청/재도전’</li>
