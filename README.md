@@ -3,6 +3,12 @@
 - BitaMin, data analysis &amp; data science assosiation, 12th and 13th joint project (2024.03.06 ~ 2024.06.05.)
 - Time Series and Reinforcement Learning for Stock Trading
 
+### Team
+|송규헌|송휘종|서영우|이태경|정유진|정준우|
+|:---:|:---:|:---:|:---:|:---:|:---:|
+|![song9-avatar](https://avatars.githubusercontent.com/u/113088511?v=4)|![shj](https://avatars.githubusercontent.com/u/170795597?v=4)|![uosstat](https://avatars.githubusercontent.com/u/101987656?v=4)|![taekyoung](https://avatars.githubusercontent.com/u/122856705?v=4)|![y8jinn](https://avatars.githubusercontent.com/u/112757321?v=4)|![junwoo](https://avatars.githubusercontent.com/u/104676353?v=4)|
+|[Github](https://github.com/skier-song9)|[Github](https://github.com/songhwijong)|[Github](https://github.com/uosstat98)|[Github](https://github.com/taekyounglee1224)|[Github](https://github.com/y8jinn)|[Github](https://github.com/Junwoo2001)|
+
 ## ✅Table of Contents
 - [💼Project Introduction](#Project_Introduction)
     - [Overview](#Overview)
