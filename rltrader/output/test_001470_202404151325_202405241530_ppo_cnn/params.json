@@ -1,0 +1,1 @@
+{"mode": "test", "ver": "v1", "name": "001470_202404151325_202405241530", "stock_code": ["001470"], "rl_method": "ppo", "net": "cnn", "backend": "pytorch", "start_date": "202405241320", "end_date": "202405311530", "lr": 0.001, "discount_factor": 0.99, "balance": 500000000, "is_start_end": 0, "is_mock": 1}

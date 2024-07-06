@@ -1,0 +1,4 @@
+{"mode": "test", "ver": "v1", "name": "267260_202404151345_202405241530", "stock_code": ["267260"], "rl_method": "ppo", "net": "cnn", "backend": "pytorch", "start_date": "202405241320", "end_date": "202405311530", "lr": 0.001, "discount_factor": 0.99, "balance": 500000000, "is_start_end": 0, "is_mock": 1}
+[267260] RL:ppo NET:cnn LR:0.001 DF:0.99 
+[267260][Epoch 1/1] Epsilon:0.0000 #Expl.:1206/1906 #Buy:409 #Sell:404 #Hold:1093 #Stocks:274 PV:502,434,021 Loss:0.000000 ET:3.2313
+[267260] Elapsed Time:12.8593 Max PV:502,434,021 #Win:1
