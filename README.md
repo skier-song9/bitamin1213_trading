@@ -28,6 +28,9 @@ Maximizing Portfolio Value by <b>Time Series Forecasting</b> and system trading 
     <li>Train <b style='background-color: #EDF3EC;'>Reinforcement Learning</b> on the selected stocks and implement system trading</li>
 </ul>
 
+<h6>◾Flowchart</h6>
+<img src='https://github.com/skier-song9/bitamin1213_trading/blob/master/ppt/project_flowchart.png' alt='project flowchart image'>
+
 <a name='Reference'></a>
 <h4>🔖Reference</h4>
 <h6>◾<a href="https://github.com/quantylab">Quantylab</a></h6>
@@ -60,7 +63,7 @@ pip install -r trading_requirements.txt
     <li><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">cd rltrader/src/</code></li>
     <li>refer to <a href="https://github.com/quantylab/rltrader?tab=readme-ov-file#%EC%8B%A4%ED%96%89">quantylab</a> for detailed parameters descriptions.<br>e.g.)</li>
     <pre>
-<code class='bash'>python main.py --mode train --ver v1 --name 002870_0110_0524 --stock_code 002870 --rl_method a2c --net cnn --backend pytorch --balance 500000000 --start_date 202401101132 --end_date 202405241530</code></pre>
+<code class='bash'>python main.py --mode train --ver v1 --name 001470_202404151325_202405241530 --stock_code 001470 --rl_method ppo --net cnn --backend pytorch --balance 500000000 --start_date 202404151325 --end_date 202405241530</code></pre>
     <li style="margin-left:30px;list-style-type:circle;"><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">--mode</code> : set 'train' when training model</li>
     <li style="margin-left:30px;list-style-type:circle;"><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">--ver</code> : leave it with 'v1' for out code</li>
     <li style="margin-left:30px;list-style-type:circle;"><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">--name</code> : set name of output directory and model file</li>
@@ -73,10 +76,11 @@ pip install -r trading_requirements.txt
 <a name='Test-(Backtrading)'></a>
 ## 🛠️Test (Backtrading)
 <p>check the start_date and end_date of stock. start_date should be the 120 time steps before you want to start the test because of input size of CNN.<br>
-e.g.) if you want to backtrade from 2024.05.27 09:01 to 2024.05.31 15:30 then you should set the start_date as 202405241322 120 time steps before the 2024.05.27 09:01.</p>
+e.g.) if you want to backtrade from 2024.05.27 09:01 to 2024.05.31 15:30 then you should set the start_date as 202405241322 which is 120 time steps before the 2024.05.27 09:01.</p>
+<p>Also you should set --name same as the train name in order to make sure rltrader use trained model for inference.</p>
 <pre>
 <code class='bash'>
-python main.py --mode test --ver v1 --name 001470_0326_0524_120steps_300epoch --stock_code 001470 --rl_method a2c --net cnn --backend pytorch --balance 500000000 --start_date 202405241322 --end_date 202405311530
+python main.py --mode test --ver v1 --name 001470_202404151325_202405241530 --stock_code 001470 --rl_method ppo --net cnn --backend pytorch --balance 500000000 --start_date 202405241320 --end_date 202405311530
 </code></pre>
 
 
@@ -121,7 +125,7 @@ For real-time system trading, use 'predict' keyword. Setting start_date is same 
 You should run system trading code day by day. 'predict' method is just for a day trading.
 <pre>
 <code class='bash'>
-python main.py --mode predict --ver v1 --name 001470_0326_0524_120steps_300epoch --stock_code 001470 --rl_method a2c --net cnn --backend pytorch --balance 500000000 --start_date 202405231346 --end_date 202405281530 --is_start_end 2 --is_mock 1
+python main.py --mode predict --ver v1 --name 001470_202404151325_202405241530 --stock_code 001470 --rl_method ppo --net cnn --backend pytorch --balance 500000000 --start_date 202405241320 --end_date 202405281530 --is_start_end 2 --is_mock 1
 </code></pre>
 <ul style='list-style-type:circle;'>
 <li><code style="background-color: #EDEDEB;color: #EB7979;border-radius: 3px;padding: 0 3px;font-family: consolas;">--is_start_end</code> : 0 for Monday, 1 for Tuesday~Thursday, 2 for Friday.</li>
